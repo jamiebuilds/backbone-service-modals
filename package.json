@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "backbone": "^1.2.0",
-    "backbone.service": "^0.4.1",
+    "backbone.service": "^0.5.0",
     "es6-promise": "^2.1.1",
     "underscore": "^1.8.3"
   }
