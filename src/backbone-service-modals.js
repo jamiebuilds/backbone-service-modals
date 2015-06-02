@@ -45,22 +45,25 @@ export default Service.extend({
    * @param {Backbone.View} [view]
    * @returns {Promise}
    */
-  open(view) {
+  open(view, options) {
     let previousView;
     return ES6Promise.resolve().then(() => {
+      this.trigger('before:open', view, options);
       this.fragment = Backbone.history.fragment;
       this._isOpen = true;
 
       previousView = _.last(this.views);
       this.views.push(view);
 
-      return this.render(view);
+      return this.render(view, options);
     }).then(() => {
       if (previousView) {
-        return this.animateSwap(previousView, view);
+        return this.animateSwap(previousView, view, options);
       } else {
-        return this.animateIn(view);
+        return this.animateIn(view, options);
       }
+    }).then(() => {
+      this.trigger('open', view, options);
     });
   },
 
@@ -69,11 +72,17 @@ export default Service.extend({
    * @param {Backbone.View} [view]
    * @returns {Promise}
    */
-  close(view) {
+  close(view, options) {
     let previousView;
     let views;
 
     return ES6Promise.resolve().then(() => {
+      if (view) {
+        this.trigger('before:close', view, options);
+      } else {
+        _.map(this.views, view => this.trigger('before:close', view, options));
+      }
+
       this._isOpen = false;
 
       if (view) {
@@ -86,17 +95,23 @@ export default Service.extend({
       previousView = _.last(views);
 
       if (view && previousView) {
-        return this.animateSwap(view, previousView);
+        return this.animateSwap(view, previousView, options);
       } else if (view) {
-        return this.animateOut(view);
+        return this.animateOut(view, options);
       } else if (previousView) {
-        return this.animateOut(previousView);
+        return this.animateOut(previousView, options);
       }
     }).then(() => {
       if (view) {
-        return this.remove(view);
+        return this.remove(view, options);
       } else {
-        return Promise.all(_.map(views, this.remove, this));
+        return Promise.all(_.map(views, view => this.remove(view, options)));
+      }
+    }).then(() => {
+      if (view) {
+        this.trigger('close', view, options);
+      } else {
+        _.map(views, view => this.trigger('close', view, options));
       }
     });
   },
@@ -109,10 +124,15 @@ export default Service.extend({
   alert(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.AlertView(options);
-      let promise = this.open(view);
+      let promise = this.open(view, options);
+
+      this.trigger('before:alert', view, options);
 
       view.on('confirm cancel', () => {
-        promise.then(() => this.close(view)).then(resolve, reject);
+        promise
+          .then(() => this.close(view, options))
+          .then(() => this.trigger('alert', null, view, options))
+          .then(resolve, reject);
       });
     });
   },
@@ -125,10 +145,15 @@ export default Service.extend({
   confirm(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.ConfirmView(options);
-      let promise = this.open(view);
+      let promise = this.open(view, options);
+
+      this.trigger('before:confirm', view, options);
 
       let close = result => {
-        promise.then(() => this.close(view)).then(() => resolve(result), reject);
+        promise
+          .then(() => this.close(view, options))
+          .then(() => this.trigger('confirm', result, view, options))
+          .then(() => resolve(result), reject);
       };
 
       view.on({
@@ -145,10 +170,15 @@ export default Service.extend({
   prompt(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.PromptView(options);
-      let promise = this.open(view);
+      let promise = this.open(view, options);
+
+      this.trigger('before:prompt', view, options);
 
       let close = result => {
-        promise.then(() => this.close(view)).then(() => resolve(result), reject);
+        promise
+          .then(() => this.close(view, options))
+          .then(() => this.trigger('prompt', result, view, options))
+          .then(() => resolve(result), reject);
       };
 
       view.on({

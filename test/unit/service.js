@@ -15,24 +15,49 @@ describe('ModalService', function() {
   describe('#open', function() {
     beforeEach(function() {
       this.modalService = new this.ModalService();
+      spy(this.modalService, 'trigger');
     });
 
     describe('when no other modals are open', function() {
       beforeEach(function() {
         this.view = new View();
+        this.options = {};
+      });
+
+      it('should trigger a "before:open" event', function() {
+        return this.modalService.open(this.view, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:open', this.view, this.options);
+        });
       });
 
       it('should render the view', function() {
-        return this.modalService.open(this.view).then(() => {
+        return this.modalService.open(this.view, this.options).then(() => {
           expect(this.modalService.render)
-            .to.have.been.calledWith(this.view);
+            .to.have.been.calledWith(this.view, this.options);
         });
       });
 
       it('should animate the view in', function() {
-        return this.modalService.open(this.view).then(() => {
+        return this.modalService.open(this.view, this.options).then(() => {
           expect(this.modalService.animateIn)
-            .to.have.been.calledWith(this.view);
+            .to.have.been.calledWith(this.view, this.options);
+        });
+      });
+
+      it('should trigger a "before:open" event', function() {
+        this.modalService.render = () => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:open', this.view, this.options);
+        };
+
+        return this.modalService.open(this.view, this.options);
+      });
+
+      it('should trigger a "open" event', function() {
+        return this.modalService.open(this.view, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('open', this.view, this.options);
         });
       });
     });
@@ -41,20 +66,37 @@ describe('ModalService', function() {
       beforeEach(function() {
         this.view1 = new View();
         this.view2 = new View();
+        this.options = {};
         return this.modalService.open(this.view1);
       });
 
       it('should render the view', function() {
-        return this.modalService.open(this.view2).then(() => {
+        return this.modalService.open(this.view2, this.options).then(() => {
           expect(this.modalService.render)
-            .to.have.been.calledWith(this.view2);
+            .to.have.been.calledWith(this.view2, this.options);
         });
       });
 
       it('should animate the swapping of the views', function() {
-        return this.modalService.open(this.view2).then(() => {
+        return this.modalService.open(this.view2, this.options).then(() => {
           expect(this.modalService.animateSwap)
-            .to.have.been.calledWith(this.view1, this.view2);
+            .to.have.been.calledWith(this.view1, this.view2, this.options);
+        });
+      });
+
+      it('should trigger a "before:open" event', function() {
+        this.modalService.render = () => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:open', this.view2, this.options);
+        };
+
+        return this.modalService.open(this.view2, this.options);
+      });
+
+      it('should trigger a "open" event', function() {
+        return this.modalService.open(this.view2, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('open', this.view2, this.options);
         });
       });
     });
@@ -63,25 +105,43 @@ describe('ModalService', function() {
   describe('#close', function() {
     beforeEach(function() {
       this.modalService = new this.ModalService();
+      spy(this.modalService, 'trigger');
     });
 
     describe('when no other modals were previously open', function() {
       beforeEach(function() {
         this.view = new View();
+        this.options = {};
         return this.modalService.open(this.view);
       });
 
       it('should animate the view out', function() {
-        return this.modalService.close(this.view).then(() => {
+        return this.modalService.close(this.view, this.options).then(() => {
           expect(this.modalService.animateOut)
-            .to.have.been.calledWith(this.view);
+            .to.have.been.calledWith(this.view, this.options);
         });
       });
 
       it('should remove the view', function() {
-        return this.modalService.close(this.view).then(() => {
+        return this.modalService.close(this.view, this.options).then(() => {
           expect(this.modalService.remove)
-            .to.have.been.calledWith(this.view);
+            .to.have.been.calledWith(this.view, this.options);
+        });
+      });
+
+      it('should trigger a "before:close" event', function() {
+        this.modalService.remove = () => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:close', this.view, this.options);
+        };
+
+        return this.modalService.close(this.view, this.options);
+      });
+
+      it('should trigger a "close" event', function() {
+        return this.modalService.close(this.view, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('close', this.view, this.options);
         });
       });
     });
@@ -90,22 +150,39 @@ describe('ModalService', function() {
       beforeEach(function() {
         this.view1 = new View();
         this.view2 = new View();
+        this.options = {};
         return this.modalService.open(this.view1).then(() => {
           return this.modalService.open(this.view2);
         });
       });
 
       it('should animate the swapping of the views', function() {
-        return this.modalService.close(this.view2).then(() => {
+        return this.modalService.close(this.view2, this.options).then(() => {
           expect(this.modalService.animateSwap)
-            .to.have.been.calledWith(this.view2, this.view1);
+            .to.have.been.calledWith(this.view2, this.view1, this.options);
         });
       });
 
       it('should remove the view', function() {
-        return this.modalService.close(this.view2).then(() => {
+        return this.modalService.close(this.view2, this.options).then(() => {
           expect(this.modalService.remove)
-            .to.have.been.calledWith(this.view2);
+            .to.have.been.calledWith(this.view2, this.options);
+        });
+      });
+
+      it('should trigger a "before:close" event', function() {
+        this.modalService.remove = () => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:close', this.view2, this.options);
+        };
+
+        return this.modalService.close(this.view2, this.options);
+      });
+
+      it('should trigger a "close" event', function() {
+        return this.modalService.close(this.view2, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('close', this.view2, this.options);
         });
       });
     });
@@ -114,23 +191,44 @@ describe('ModalService', function() {
       beforeEach(function() {
         this.view1 = {view1: true};
         this.view2 = {view2: true};
+        this.options = {};
         return this.modalService.open(this.view1).then(() => {
           return this.modalService.open(this.view2);
         });
       });
 
       it('should animate the current view out', function() {
-        return this.modalService.close().then(() => {
+        return this.modalService.close(null, this.options).then(() => {
           expect(this.modalService.animateOut)
-            .to.have.been.calledWith(this.view2);
+            .to.have.been.calledWith(this.view2, this.options);
         });
       });
 
       it('should remove ALL OF THE VIEWS!!!', function() {
-        return this.modalService.close().then(() => {
+        return this.modalService.close(null, this.options).then(() => {
           expect(this.modalService.remove)
-            .to.have.been.calledWith(this.view1)
-            .and.calledWith(this.view2);
+            .to.have.been.calledWith(this.view1, this.options)
+            .and.calledWith(this.view2, this.options);
+        });
+      });
+
+      it('should trigger a "before:close" event', function() {
+        this.modalService.remove = () => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:close', this.view1, this.options);
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('before:close', this.view2, this.options);
+        };
+
+        return this.modalService.close(null, this.options);
+      });
+
+      it('should trigger a "close" event', function() {
+        return this.modalService.close(null, this.options).then(() => {
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('close', this.view1, this.options);
+          expect(this.modalService.trigger)
+            .to.have.been.calledWith('close', this.view2, this.options);
         });
       });
     });
@@ -145,27 +243,44 @@ describe('ModalService', function() {
       this.modalService = new this.ModalService();
       spy(this.modalService, 'open');
       spy(this.modalService, 'close');
+      spy(this.modalService, 'trigger');
+      this.options = {};
     });
 
     it('should open the alert modal and resolve on confirm', function() {
-      let alert = this.modalService.alert();
+      this.modalService.on('open', () => this.alertView.trigger('confirm'));
 
-      Promise.resolve().then(() => this.alertView.trigger('confirm'));
-
-      return alert.then(() => {
+      return this.modalService.alert().then(() => {
         expect(this.modalService.open).to.have.been.calledWith(this.alertView);
         expect(this.modalService.close).to.have.been.calledWith(this.alertView);
       });
     });
 
     it('should open the alert modal and close on cancel', function() {
-      let alert = this.modalService.alert();
+      this.modalService.on('open', () => this.alertView.trigger('cancel'));
 
-      Promise.resolve().then(() => this.alertView.trigger('cancel'));
-
-      return alert.then(() => {
+      return this.modalService.alert().then(() => {
         expect(this.modalService.open).to.have.been.calledWith(this.alertView);
         expect(this.modalService.close).to.have.been.calledWith(this.alertView);
+      });
+    });
+
+    it('should trigger a "before:alert" event', function() {
+      this.modalService.on('open', () => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('before:alert', this.alertView, this.options);
+        this.alertView.trigger('confirm');
+      });
+
+      return this.modalService.alert(this.options);
+    });
+
+    it('should trigger a "alert" event', function() {
+      this.modalService.on('open', () => this.alertView.trigger('confirm'));
+
+      return this.modalService.alert(this.options).then(() => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('alert', null, this.alertView, this.options);
       });
     });
   });
@@ -179,6 +294,8 @@ describe('ModalService', function() {
       this.modalService = new this.ModalService();
       spy(this.modalService, 'open');
       spy(this.modalService, 'close');
+      spy(this.modalService, 'trigger');
+      this.options = {};
     });
 
     it('should open the confirm modal and resolve with true on confirm', function() {
@@ -204,6 +321,25 @@ describe('ModalService', function() {
         expect(this.modalService.close).to.have.been.calledWith(this.confirmView);
       });
     });
+
+    it('should trigger a "before:confirm" event', function() {
+      this.modalService.on('open', () => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('before:confirm', this.confirmView, this.options);
+        this.confirmView.trigger('confirm');
+      });
+
+      return this.modalService.confirm(this.options);
+    });
+
+    it('should trigger a "confirm" event', function() {
+      this.modalService.on('open', () => this.confirmView.trigger('confirm'));
+
+      return this.modalService.confirm(this.options).then(() => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('confirm', true, this.confirmView, this.options);
+      });
+    });
   });
 
   describe('#prompt', function() {
@@ -215,14 +351,14 @@ describe('ModalService', function() {
       this.modalService = new this.ModalService();
       spy(this.modalService, 'open');
       spy(this.modalService, 'close');
+      spy(this.modalService, 'trigger');
+      this.options = {};
     });
 
     it('should open the prompt modal and resolve with string on submit', function() {
-      let prompt = this.modalService.prompt();
+      this.modalService.on('open', () => this.promptView.trigger('submit', 'myString'));
 
-      Promise.resolve().then(() => this.promptView.trigger('submit', 'myString'));
-
-      return prompt.then(result => {
+      return this.modalService.prompt().then(result => {
         expect(result).to.equal('myString');
         expect(this.modalService.open).to.have.been.calledWith(this.promptView);
         expect(this.modalService.close).to.have.been.calledWith(this.promptView);
@@ -230,14 +366,31 @@ describe('ModalService', function() {
     });
 
     it('should open the prompt modal and close with undefined on cancel', function() {
-      let prompt = this.modalService.prompt();
+      this.modalService.on('open', () => this.promptView.trigger('cancel', 'devilsAdvocateString'));
 
-      Promise.resolve().then(() => this.promptView.trigger('cancel', 'devilsAdvocateString'));
-
-      return prompt.then(result => {
+      return this.modalService.prompt().then(result => {
         expect(result).to.be.undefined;
         expect(this.modalService.open).to.have.been.calledWith(this.promptView);
         expect(this.modalService.close).to.have.been.calledWith(this.promptView);
+      });
+    });
+
+    it('should trigger a "before:prompt" event', function() {
+      this.modalService.on('open', () => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('before:prompt', this.promptView, this.options);
+        this.promptView.trigger('submit', 'myString');
+      });
+
+      return this.modalService.prompt(this.options);
+    });
+
+    it('should trigger a "prompt" event', function() {
+      this.modalService.on('open', () => this.promptView.trigger('submit', 'myString'));
+
+      return this.modalService.prompt(this.options).then(() => {
+        expect(this.modalService.trigger)
+          .to.have.been.calledWith('prompt', 'myString', this.promptView, this.options);
       });
     });
   });
