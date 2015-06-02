@@ -46,24 +46,27 @@
      * @param {Backbone.View} [view]
      * @returns {Promise}
      */
-    open: function open(view) {
+    open: function open(view, options) {
       var _this2 = this;
 
       var previousView = undefined;
       return ES6Promise.resolve().then(function () {
+        _this2.trigger('before:open', view, options);
         _this2.fragment = Backbone.history.fragment;
         _this2._isOpen = true;
 
         previousView = _.last(_this2.views);
         _this2.views.push(view);
 
-        return _this2.render(view);
+        return _this2.render(view, options);
       }).then(function () {
         if (previousView) {
-          return _this2.animateSwap(previousView, view);
+          return _this2.animateSwap(previousView, view, options);
         } else {
-          return _this2.animateIn(view);
+          return _this2.animateIn(view, options);
         }
+      }).then(function () {
+        _this2.trigger('open', view, options);
       });
     },
 
@@ -72,13 +75,21 @@
      * @param {Backbone.View} [view]
      * @returns {Promise}
      */
-    close: function close(view) {
+    close: function close(view, options) {
       var _this3 = this;
 
       var previousView = undefined;
       var views = undefined;
 
       return ES6Promise.resolve().then(function () {
+        if (view) {
+          _this3.trigger('before:close', view, options);
+        } else {
+          _.map(_this3.views, function (view) {
+            return _this3.trigger('before:close', view, options);
+          });
+        }
+
         _this3._isOpen = false;
 
         if (view) {
@@ -91,17 +102,27 @@
         previousView = _.last(views);
 
         if (view && previousView) {
-          return _this3.animateSwap(view, previousView);
+          return _this3.animateSwap(view, previousView, options);
         } else if (view) {
-          return _this3.animateOut(view);
+          return _this3.animateOut(view, options);
         } else if (previousView) {
-          return _this3.animateOut(previousView);
+          return _this3.animateOut(previousView, options);
         }
       }).then(function () {
         if (view) {
-          return _this3.remove(view);
+          return _this3.remove(view, options);
         } else {
-          return Promise.all(_.map(views, _this3.remove, _this3));
+          return Promise.all(_.map(views, function (view) {
+            return _this3.remove(view, options);
+          }));
+        }
+      }).then(function () {
+        if (view) {
+          _this3.trigger('close', view, options);
+        } else {
+          _.map(views, function (view) {
+            return _this3.trigger('close', view, options);
+          });
         }
       });
     },
@@ -116,11 +137,15 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this4.AlertView(options);
-        var promise = _this4.open(view);
+        var promise = _this4.open(view, options);
+
+        _this4.trigger('before:alert', view, options);
 
         view.on('confirm cancel', function () {
           promise.then(function () {
-            return _this4.close(view);
+            return _this4.close(view, options);
+          }).then(function () {
+            return _this4.trigger('alert', null, view, options);
           }).then(resolve, reject);
         });
       });
@@ -136,11 +161,15 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this5.ConfirmView(options);
-        var promise = _this5.open(view);
+        var promise = _this5.open(view, options);
+
+        _this5.trigger('before:confirm', view, options);
 
         var close = function close(result) {
           promise.then(function () {
-            return _this5.close(view);
+            return _this5.close(view, options);
+          }).then(function () {
+            return _this5.trigger('confirm', result, view, options);
           }).then(function () {
             return resolve(result);
           }, reject);
@@ -166,11 +195,15 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this6.PromptView(options);
-        var promise = _this6.open(view);
+        var promise = _this6.open(view, options);
+
+        _this6.trigger('before:prompt', view, options);
 
         var close = function close(result) {
           promise.then(function () {
-            return _this6.close(view);
+            return _this6.close(view, options);
+          }).then(function () {
+            return _this6.trigger('prompt', result, view, options);
           }).then(function () {
             return resolve(result);
           }, reject);
