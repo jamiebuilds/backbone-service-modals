@@ -20,7 +20,8 @@
         close: 'close',
         alert: 'alert',
         confirm: 'confirm',
-        prompt: 'prompt' };
+        prompt: 'prompt'
+      };
     },
 
     /**
@@ -137,14 +138,12 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this4.AlertView(options);
-        var promise = _this4.open(view, options);
+        _this4.open(view, options);
 
         _this4.trigger('before:alert', view, options);
 
         view.on('confirm cancel', function () {
-          promise.then(function () {
-            return _this4.close(view, options);
-          }).then(function () {
+          _this4.close(view, options).then(function () {
             return _this4.trigger('alert', null, view, options);
           }).then(resolve, reject);
         });
@@ -161,14 +160,12 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this5.ConfirmView(options);
-        var promise = _this5.open(view, options);
+        _this5.open(view, options);
 
         _this5.trigger('before:confirm', view, options);
 
         var close = function close(result) {
-          promise.then(function () {
-            return _this5.close(view, options);
-          }).then(function () {
+          _this5.close(view, options).then(function () {
             return _this5.trigger('confirm', result, view, options);
           }).then(function () {
             return resolve(result);
@@ -195,14 +192,12 @@
 
       return new ES6Promise(function (resolve, reject) {
         var view = new _this6.PromptView(options);
-        var promise = _this6.open(view, options);
+        _this6.open(view, options);
 
         _this6.trigger('before:prompt', view, options);
 
         var close = function close(result) {
-          promise.then(function () {
-            return _this6.close(view, options);
-          }).then(function () {
+          _this6.close(view, options).then(function () {
             return _this6.trigger('prompt', result, view, options);
           }).then(function () {
             return resolve(result);
@@ -256,7 +251,8 @@
      * @abstract
      * @method animateOut
      */
-    animateOut: function animateOut() {} });
+    animateOut: function animateOut() {}
+  });
 
   return backbone_service_modals;
 });
