@@ -124,13 +124,12 @@ export default Service.extend({
   alert(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.AlertView(options);
-      let promise = this.open(view, options);
+      this.open(view, options);
 
       this.trigger('before:alert', view, options);
 
       view.on('confirm cancel', () => {
-        promise
-          .then(() => this.close(view, options))
+        this.close(view, options)
           .then(() => this.trigger('alert', null, view, options))
           .then(resolve, reject);
       });
@@ -145,13 +144,12 @@ export default Service.extend({
   confirm(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.ConfirmView(options);
-      let promise = this.open(view, options);
+      this.open(view, options);
 
       this.trigger('before:confirm', view, options);
 
       let close = result => {
-        promise
-          .then(() => this.close(view, options))
+        this.close(view, options)
           .then(() => this.trigger('confirm', result, view, options))
           .then(() => resolve(result), reject);
       };
@@ -170,13 +168,12 @@ export default Service.extend({
   prompt(options) {
     return new ES6Promise((resolve, reject) => {
       let view = new this.PromptView(options);
-      let promise = this.open(view, options);
+      this.open(view, options);
 
       this.trigger('before:prompt', view, options);
 
       let close = result => {
-        promise
-          .then(() => this.close(view, options))
+        this.close(view, options)
           .then(() => this.trigger('prompt', result, view, options))
           .then(() => resolve(result), reject);
       };
